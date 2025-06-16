@@ -285,26 +285,37 @@
     // 定义DocumentCamera组件
     const DocumentCamera = {
       template: `
-  <div class="document-camera-container">
+    <div class="document-camera-container">
     <!-- 相机视图区域 -->
     <div class="camera-view" ref="cameraView">
       <video ref="video" autoplay playsinline></video>
 
       <!-- 取景框遮罩 -->
       <div class="mask-overlay">
-        <div class="document-frame" :class="documentType"></div>
-        <div class="instruction-text">
-          {{ documentType === 'id-card-front' ? '请将身份证正面放入框内' :
-            documentType === 'id-card-back' ? '请将身份证背面放入框内' :
-              documentType === 'driving-license' ? '请将驾驶证放入框内' :
-                '请将证件放入框内' }}
+        <div class="mask-overlay-container">
+          <div class="instruction-text">请正对手机屏幕</div>
+          <div class="document-frame" :class="documentType"></div>
+        </div>
+
+      </div>
+      <!-- 拍照提示 -->
+      <div class="capture-tips">
+        <div class="capture-tips-item"><span>1</span> 请确保面部清晰，露出五官，表情自然</div>
+        <div class="capture-tips-item"><span>2</span> 请不要戴帽子、口罩等物品，避免遮挡五官</div>
+        <div class="capture-tips-item"><span>3</span> 可佩戴眼镜，但镜片需无反光，避免遮挡瞳孔</div>
+        <div class="capture-tips-item"><span>4</span> 请在光线均匀、无明显逆光的环境下进行采集</div>
+        <div class="capture-tips-item"><span>5</span> 取景框和背景中请勿出现多张人脸</div>
+        <!-- 拍照按钮 -->
+        <div class="capture-button-box">
+          <button class="capture-button" @click="capturePhoto">
+            <div class="capture-icon"></div>
+          </button>
+          <div class="capture-turn" @click="trunCapture">
+            <img src="./img/翻转.png" alt="">
+          </div>
         </div>
       </div>
 
-      <!-- 拍照按钮 -->
-      <button class="capture-button" @click="capturePhoto">
-        <div class="capture-icon"></div>
-      </button>
     </div>
 
     <!-- 拍照结果预览 -->
@@ -318,41 +329,16 @@
       </div>
     </div>
 
-    <!-- 证件类型选择 -->
-    <div v-if="!capturedImage" class="document-type-selector">
-      <div class="type-item" :class="{ active: documentType === 'id-card-front' }"
-        @click="documentType = 'id-card-front'">
-        <i class="fa fa-id-card-o"></i>
-        <span>身份证正面</span>
-      </div>
-      <div class="type-item" :class="{ active: documentType === 'id-card-back' }"
-        @click="documentType = 'id-card-back'">
-        <i class="fa fa-id-card-o"></i>
-        <span>身份证背面</span>
-      </div>
-      <div class="type-item" :class="{ active: documentType === 'driving-license' }"
-        @click="documentType = 'driving-license'">
-        <i class="fa fa-car"></i>
-        <span>驾驶证</span>
-      </div>
-    </div>
-  </div>
-            `,
+  </div>  `,
       data() {
         return {
           video: null,
           canvas: null,
-          documentType: 'id-card-front',
+          documentType: 'id-card-front', // 默认证件类型：身份证正面
           capturedImage: null,
           stream: null,
-          statusText: ''
+          facingMode: 'environment'
         };
-      },
-      mounted() {
-        this.initCamera();
-      },
-      beforeDestroy() {
-        this.stopCamera();
       },
       mounted() {
         this.initCamera();
@@ -371,7 +357,7 @@
             // 请求访问摄像头
             const stream = await navigator.mediaDevices.getUserMedia({
               video: {
-                facingMode: 'user', // 使用后置摄像头
+                facingMode: this.facingMode, // 使用后置摄像头
                 width: { ideal: 1280 },
                 height: { ideal: 720 }
               }
@@ -404,7 +390,7 @@
               this.statusText = '相机初始化失败，请重试';
             }
 
-            console.error('摄像头访问失败:', this.statusText);
+            console.error('摄像头访问失败:', error);
 
           }
         },
@@ -457,6 +443,12 @@
 
           // 停止相机以节省资源
           this.stopCamera();
+        },
+
+        //翻转相机
+        trunCapture() {
+          console.log('object');
+          this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
         },
 
         // 重置相机
