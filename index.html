@@ -460,6 +460,7 @@
         trunCapture() {
           console.log('object');
           this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+          this.resetCamera()
         },
 
         // 重置相机
